@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Listener", "Listener\Listener.csproj", "{BD209926-33B2-4E31-8DF7-6C617564D38B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lidgren.Network", "Lidgren.Network\Lidgren.Network.csproj", "{49BA1C69-6104-41AC-A5D8-B54FA9F696E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkingMessages", "NetworkingMessages\NetworkingMessages.csproj", "{212628D8-29F5-44EB-A8AE-9135706A326E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connector", "Connector\Connector.csproj", "{D13F2491-145B-4C69-B943-9A3DFE932E04}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		UnityRelease|Any CPU = UnityRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BD209926-33B2-4E31-8DF7-6C617564D38B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD209926-33B2-4E31-8DF7-6C617564D38B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD209926-33B2-4E31-8DF7-6C617564D38B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD209926-33B2-4E31-8DF7-6C617564D38B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD209926-33B2-4E31-8DF7-6C617564D38B}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{BD209926-33B2-4E31-8DF7-6C617564D38B}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+		{49BA1C69-6104-41AC-A5D8-B54FA9F696E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49BA1C69-6104-41AC-A5D8-B54FA9F696E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49BA1C69-6104-41AC-A5D8-B54FA9F696E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49BA1C69-6104-41AC-A5D8-B54FA9F696E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49BA1C69-6104-41AC-A5D8-B54FA9F696E8}.UnityRelease|Any CPU.ActiveCfg = UnityRelease|Any CPU
+		{49BA1C69-6104-41AC-A5D8-B54FA9F696E8}.UnityRelease|Any CPU.Build.0 = UnityRelease|Any CPU
+		{212628D8-29F5-44EB-A8AE-9135706A326E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212628D8-29F5-44EB-A8AE-9135706A326E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212628D8-29F5-44EB-A8AE-9135706A326E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212628D8-29F5-44EB-A8AE-9135706A326E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{212628D8-29F5-44EB-A8AE-9135706A326E}.UnityRelease|Any CPU.ActiveCfg = UnityRelease|Any CPU
+		{212628D8-29F5-44EB-A8AE-9135706A326E}.UnityRelease|Any CPU.Build.0 = UnityRelease|Any CPU
+		{D13F2491-145B-4C69-B943-9A3DFE932E04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D13F2491-145B-4C69-B943-9A3DFE932E04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D13F2491-145B-4C69-B943-9A3DFE932E04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D13F2491-145B-4C69-B943-9A3DFE932E04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D13F2491-145B-4C69-B943-9A3DFE932E04}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{D13F2491-145B-4C69-B943-9A3DFE932E04}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
