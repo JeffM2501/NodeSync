@@ -12,18 +12,37 @@ using NetworkingMessages.Messages;
 
 namespace Connector
 {
+    public interface ClientHandler
+    {
+        void ClientConnected(NetClient client);
+
+        void ClientReceiveData(NetIncomingMessage msg);
+        void ClientDisconnected(string reason);
+
+        void DisconnectClient(string reason);
+    }
 
     public class Client
     {
 		NetClient SocketClient;
 
-		private int ConnectionPort = 0;
+        protected ClientHandler Handler = null;
+
+        private int ConnectionPort = 0;
+        protected string ConnectionHost = string.Empty;
+
 		public int ConnectedPort
 		{
 			get { return ConnectionPort; }
 		}
 
-		protected object Locker = new object();
+        public string ConnectedHost
+        {
+            get { return ConnectionHost; }
+        }
+
+
+        protected object Locker = new object();
 		protected bool Connected = false;
 
 		public bool IsConnected
@@ -31,9 +50,25 @@ namespace Connector
 			get { lock(Locker) return Connected; }
 		}
 
-		public void Connect(string host, int port, bool useNewThred)
+        public Client(ClientHandler handler)
+        {
+            Handler = handler;
+        }
+
+        public Client(ClientHandler handler, string host, int port)
+        {
+            Handler = handler;
+        }
+
+        public void Reconnect()
+        {
+            Connect(ConnectedHost, ConnectedPort);
+        }
+
+        public void Connect(string host, int port)
 		{
-			ConnectionPort = port;
+            ConnectionHost = host;
+            ConnectionPort = port;
 			NetPeerConfiguration config = new NetPeerConfiguration(NetworkingMessages.MessageFactory.ProtocolVersionString);
 			config.AutoFlushSendQueue = true;
 			SocketClient = new NetClient(config);
@@ -106,17 +141,6 @@ namespace Connector
 				ExitFlag = true;
 		}
 
-		private void CheckMessagesForThread()
-		{
-			while(!ExitCheckThread())
-			{
-				while(ProcessOneMessages()) ;
-				Thread.Sleep(10);
-			}
-
-			CheckingThread = null;
-		}
-
 		public bool ProcessOneMessages()
 		{
 			NetIncomingMessage im;
@@ -142,7 +166,6 @@ namespace Connector
 							lock(Locker)
 								Connected = true;
 
-							SetClientConnecting();
 							// 							if(im.SenderConnection.RemoteHailMessage != null)
 							// 								AddLogLine("Remote hail: " + im.SenderConnection.RemoteHailMessage.ReadString());
 							if(HostConnected != null)
@@ -153,7 +176,6 @@ namespace Connector
 							lock(Locker)
 								Connected = false;
 
-							SetClientDisconnecting();
 							if(HostDisconnected != null)
 								HostDisconnected.Invoke(this, EventArgs.Empty);
 						}

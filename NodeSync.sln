@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkingMessages", "Netwo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connector", "Connector\Connector.csproj", "{D13F2491-145B-4C69-B943-9A3DFE932E04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebListener", "WebListener\WebListener.csproj", "{0B575C85-1A00-4E91-B1CB-25035CFBFEAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,12 @@ Global
 		{D13F2491-145B-4C69-B943-9A3DFE932E04}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D13F2491-145B-4C69-B943-9A3DFE932E04}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{D13F2491-145B-4C69-B943-9A3DFE932E04}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+		{0B575C85-1A00-4E91-B1CB-25035CFBFEAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B575C85-1A00-4E91-B1CB-25035CFBFEAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B575C85-1A00-4E91-B1CB-25035CFBFEAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B575C85-1A00-4E91-B1CB-25035CFBFEAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B575C85-1A00-4E91-B1CB-25035CFBFEAE}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{0B575C85-1A00-4E91-B1CB-25035CFBFEAE}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
