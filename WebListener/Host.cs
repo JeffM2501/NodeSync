@@ -35,7 +35,6 @@ namespace WebListener
             {
                 Request = context;
                 ProcessThred = new Thread(new ThreadStart(GetResponce));
-              
             }
 
             public void Start()
@@ -43,7 +42,7 @@ namespace WebListener
                 ProcessThred.Start();
             }
 
-            protected void GetResponce()
+            protected virtual void GetResponce()
             {
                 if (Callback != null)
                      Callback(Request);
@@ -52,9 +51,14 @@ namespace WebListener
             }
         }
 
+		protected virtual WebRequest GetRequestProcessor(HttpListenerContext context, GenerateWebResponceCB cb)
+		{
+			return new WebRequest(context,cb);
+		}
+
         protected List<WebRequest> RequestProcesses = new List<WebRequest>();
 
-        public void Startup()
+        public virtual void Startup()
         {
             Shutdown();
 
@@ -76,7 +80,7 @@ namespace WebListener
 
         }
 
-        public void Shutdown()
+        public virtual void Shutdown()
         {
             if (ListenerThread != null)
                 ListenerThread.Abort();
