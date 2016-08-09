@@ -55,16 +55,47 @@ namespace JsonMessages
 			return null;
 		}
 
-		public static JsonMessage ParseMessage(StringReader reader)
+		public static JsonMessage ParseMessage(string input)
 		{
-			GeneralErrorMessage
-			byte[] buffer = System.Text.Encoding.Unicode.GetBytes(reader.ReadToEnd());
+			GeneralErrorMessage defaultError = GeneralErrorMessage.ParseError;
+
+			byte[] buffer = System.Text.Encoding.Unicode.GetBytes(input);
 			MemoryStream ms = new MemoryStream(buffer);
 
 			DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(JsonMessage));
 			var baseMessage = ser.ReadObject(ms) as JsonMessage;
-			if (baseMessage == null)
+			if (baseMessage != null)
+            {
+                ms.Close();
+                ms = new MemoryStream(buffer);// reset for re-parse in final type
 
-		}
+                Type t = GetMessageType(baseMessage.MessageName);
+
+                if (t != null)
+                {
+                    ser = new DataContractJsonSerializer(t);
+
+                    JsonMessage outMsg = ser.ReadObject(ms) as JsonMessage;
+                    if (outMsg != null)
+                        return outMsg;
+                }
+                else
+                    defaultError = GeneralErrorMessage.UnknownError;
+
+                ms.Close();
+            }
+
+            return defaultError;
+        }
+
+        public static string PackMessage(JsonMessage message)
+        {
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(message.GetType());
+            MemoryStream ms = new MemoryStream();
+            ser.WriteObject(ms, message);
+            ms.Close();
+
+            return System.Text.Encoding.UTF8.GetString(ms.GetBuffer());
+        }
 	}
 }

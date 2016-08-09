@@ -14,5 +14,10 @@ namespace JsonMessages
 		{
 			MessageName = this.GetType().ToString();
 		}
+
+        public virtual bool IsError ()
+        {
+            return false;
+        }
 	}
 }

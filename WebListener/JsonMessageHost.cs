@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Net;
@@ -107,20 +107,32 @@ namespace WebListener
 
 			protected virtual void ProcessJsonRequest(HttpListenerContext context)
 			{
-				JsonMessage inboundMessage = new JsonMessage();
+                // decode inbound
+                StreamReader reader = new StreamReader(context.Request.InputStream);
+                var inboundMessage = JsonMessages.MessageProcessor.ParseMessage(reader.ReadToEnd());
+                reader.Close();
 
-				// decode inbound
+                JsonMessage outBoundMessage = null;
 
-				context.Request.InputStream
+                // if we unparsed an error just send it back
+                if (inboundMessage.IsError())
+                    outBoundMessage = inboundMessage;
+                else
+                {   // see what they want to do with it
+                    if (MessageCallback != null)
+                        outBoundMessage = MessageCallback(inboundMessage, Sessions);
+                }
 
-				JsonMessage outBoundMessage = new JsonMessage(); // make this an error
-				if(MessageCallback != null)
-					outBoundMessage = MessageCallback(inboundMessage, Sessions);
+                // send the response back
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentType = "application/json";
 
-				// encode outbound
+                string outText = JsonMessages.MessageProcessor.PackMessage(outBoundMessage);
 
-				//context.Response
-			}
+                StreamWriter sw = new StreamWriter(context.Response.OutputStream);
+                sw.Write(outText);
+                sw.Close();
+            }
 		}
 
 		protected override WebRequest GetRequestProcessor(HttpListenerContext context, GenerateWebResponceCB cb)

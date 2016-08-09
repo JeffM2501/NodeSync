@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6C69042B-AE3C-4631-AD83-7FF808ED98A6}</ProjectGuid>
+    <ProjectGuid>{3B2E8705-F4EB-4BBA-A5C1-DDE6DB5FCE48}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JsonMessages</RootNamespace>
-    <AssemblyName>JsonMessages</AssemblyName>
+    <RootNamespace>WebConnector</RootNamespace>
+    <AssemblyName>WebConnector</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,7 +32,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,13 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GeneralErrorMessage.cs" />
-    <Compile Include="JsonMessage.cs" />
-    <Compile Include="MessageProcessor.cs" />
+    <Compile Include="JsonClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="MessageTypes\" />
+    <ProjectReference Include="..\JsonMessages\JsonMessages.csproj">
+      <Project>{6c69042b-ae3c-4631-ad83-7ff808ed98a6}</Project>
+      <Name>JsonMessages</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

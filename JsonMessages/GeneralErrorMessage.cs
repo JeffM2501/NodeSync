@@ -22,6 +22,12 @@ namespace JsonMessages
 			ErrorMessage = msg;
 		}
 
-		public static readonly GeneralErrorMessage ParseError = new GeneralErrorMessage("000", "Message Parse Error");
-	}
+        public override bool IsError()
+        {
+            return true;
+        }
+
+        public static readonly GeneralErrorMessage ParseError = new GeneralErrorMessage("000", "Message Parse Error");
+        public static readonly GeneralErrorMessage UnknownError = new GeneralErrorMessage("001", "Unknown Message Error");
+    }
 }
