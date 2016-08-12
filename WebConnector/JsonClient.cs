@@ -16,6 +16,8 @@ namespace WebConnector
             public WebRequest Requester = null;
             public JsonMessage Request = null;
             public object MessagToken = null;
+
+			public IAsyncResult AsyncResult = null;
         }
 
         protected List<PendingJob> Jobs = new List<PendingJob>();
@@ -37,65 +39,58 @@ namespace WebConnector
             BaseURL = url;
         }
 
-        public bool SendMessage(JsonMessage request, object token)
+        public void SendMessage(JsonMessage request, object token)
         {
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(MessageProcessor.PackMessage(request));
 
             PendingJob job = new PendingJob();
             job.MessagToken = token;
             job.Request = request;
-           // job.
-            lock (Jobs)
-            {
-                if (Requester != null)
-                    return false;
 
-                MessagToken = token;
-                Request = request;
+			job.Requester  = WebRequest.Create(BaseURL);
 
-                Requester = WebRequest.Create(BaseURL);
+			job.Requester.ContentType = "application/json";
+			job.Requester.Method = "POST";
+			job.Requester.ContentLength = buffer.Length;
 
-                Requester.ContentType = "application/json";
-                Requester.Method = "POST";
-                Requester.ContentLength = buffer.Length;
+			var stream = job.Requester.GetRequestStream();
+			stream.Write(buffer, 0, buffer.Length);
+			stream.Close();
 
-                var stream = Requester.GetRequestStream();
-                stream.Write(buffer, 0, buffer.Length);
-                stream.Close();
-
-                Requester.BeginGetResponse(BeginGetResponseAsyncCallback, null);
-
-
-            }
+			// job.
+			lock(Jobs)
+			{
+				Jobs.Add(job);
+				job.AsyncResult = job.Requester.BeginGetResponse(BeginGetResponseAsyncCallback, job);
+			}
         }
 
         protected void BeginGetResponseAsyncCallback(IAsyncResult ar)
         {
-            JsonMessageResponceArgs args = new JsonMessageResponceArgs();
             if (ar.IsCompleted)
             {
                 string outString = string.Empty;
-                lock(BDL)
-                {
-                    if (Requester == null)
-                        return;
+				PendingJob job = ar.AsyncState as PendingJob;
+				if(job == null)
+					return;
 
-                    args.RequestMessage = Request;
-                    args.Token = MessagToken;
+				lock(Jobs)
+				{
+					Jobs.Remove(job);
+				}
 
-                    var resp = Requester.EndGetResponse(ar);
-                    var os = resp.GetResponseStream();
-                    var sr = new StreamReader(os);
-                    outString = sr.ReadToEnd();
-                    sr.Close();
-                    os.Close();
+				JsonMessageResponceArgs args = new JsonMessageResponceArgs();
+				args.RequestMessage = job.Request;
+				args.Token = job.MessagToken;
 
-                    Requester = null;
-                    Request = null;
-                    MessagToken = null;
-                }
+				var resp = job.Requester.EndGetResponse(ar);
+				var os = resp.GetResponseStream();
+				var sr = new StreamReader(os);
+				outString = sr.ReadToEnd();
+				sr.Close();
+				os.Close();
 
-                args.ResponceMessage = MessageProcessor.ParseMessage(outString);
+				args.ResponceMessage = MessageProcessor.ParseMessage(outString);
 
                 ReceivedResponce?.Invoke(this, args);
             }
@@ -103,7 +98,16 @@ namespace WebConnector
 
         public void Shutdown()
         {
+			lock(Jobs)
+			{
+				foreach(var job in Jobs)
+				{
+					if(job.AsyncResult != null)
+						job.Requester.Abort();
+				}
 
-        }
+				Jobs.Clear();
+			}
+		}
     }
 }

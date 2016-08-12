@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonMessages", "JsonMessage
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebConnector", "WebConnector\WebConnector.csproj", "{3B2E8705-F4EB-4BBA-A5C1-DDE6DB5FCE48}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeController", "NodeController\NodeController.csproj", "{A382C8C4-E2DA-4FAD-8E32-52EDDB6C3D34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,12 @@ Global
 		{3B2E8705-F4EB-4BBA-A5C1-DDE6DB5FCE48}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B2E8705-F4EB-4BBA-A5C1-DDE6DB5FCE48}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{3B2E8705-F4EB-4BBA-A5C1-DDE6DB5FCE48}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+		{A382C8C4-E2DA-4FAD-8E32-52EDDB6C3D34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A382C8C4-E2DA-4FAD-8E32-52EDDB6C3D34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A382C8C4-E2DA-4FAD-8E32-52EDDB6C3D34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A382C8C4-E2DA-4FAD-8E32-52EDDB6C3D34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A382C8C4-E2DA-4FAD-8E32-52EDDB6C3D34}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{A382C8C4-E2DA-4FAD-8E32-52EDDB6C3D34}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
