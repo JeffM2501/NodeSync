@@ -90,7 +90,7 @@ namespace WebListener
 
 		protected SessionManager Sessions = new SessionManager();
 
-		public delegate JsonMessage GetResponceMessageCB(JsonMessage request, SessionManager sessions);
+		public delegate JsonMessage GetResponceMessageCB(JsonMessage request, JsonMessageHost.SessionManager sessions);
 
 		public GetResponceMessageCB MessageProcessor = null;
 
