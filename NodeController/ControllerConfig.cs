@@ -5,6 +5,8 @@ using System.Xml;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
 
+using EncodingTools;
+
 namespace NodeController
 {
     public class ControllerConfig
@@ -16,12 +18,16 @@ namespace NodeController
         {
             public string Name = string.Empty;
             public string PublicKey = string.Empty;
+
+            public void GetPubicKeyCrypto(RSACryptoServiceProvider rsa)
+            {
+                rsa.ImportCspBlob(Convert.FromBase64String(DecodeKeys ? PublicKey.Unprotect() : PublicKey));
+            }
         }
         public List<HostConnection> Hosts = new List<HostConnection>();
 
         public string RootTempFolder = string.Empty;
-
-
+        
         public static ControllerConfig ReadConfig(string path)
         {
             FileInfo file = new FileInfo(path);

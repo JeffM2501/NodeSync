@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeController", "NodeContr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeIO", "NodeIO\NodeIO.csproj", "{D1B59381-FCAA-4565-98CA-4C7568DFF14A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncodingTools", "EncodingTools\EncodingTools.csproj", "{F76A2E50-00FE-4737-A33F-3CE8F49BF107}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,12 @@ Global
 		{D1B59381-FCAA-4565-98CA-4C7568DFF14A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1B59381-FCAA-4565-98CA-4C7568DFF14A}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{D1B59381-FCAA-4565-98CA-4C7568DFF14A}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
