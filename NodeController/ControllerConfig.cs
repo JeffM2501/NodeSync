@@ -18,15 +18,27 @@ namespace NodeController
         {
             public string Name = string.Empty;
             public string PublicKey = string.Empty;
-
-            public void GetPubicKeyCrypto(RSACryptoServiceProvider rsa)
-            {
-                rsa.ImportCspBlob(Convert.FromBase64String(DecodeKeys ? PublicKey.Unprotect() : PublicKey));
-            }
+            public string APIKey = string.Empty;
         }
         public List<HostConnection> Hosts = new List<HostConnection>();
 
+        public HostConnection FindHost(string hostName)
+        {
+            return Hosts.Find(x => x.Name == hostName);
+        }
+
+        public void InitCrypto(string hotName, RSACryptoServiceProvider rsa)
+        {
+            var host = FindHost(hotName);
+            if (host == null)
+                return;
+
+            rsa.ImportCspBlob(Convert.FromBase64String(DecodeKeys ? host.PublicKey.Unprotect() : host.PublicKey));
+        }
+
         public string RootTempFolder = string.Empty;
+
+        public int TokenKeyValidationRange = 0;
         
         public static ControllerConfig ReadConfig(string path)
         {

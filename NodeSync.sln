@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeIO", "NodeIO\NodeIO.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncodingTools", "EncodingTools\EncodingTools.csproj", "{F76A2E50-00FE-4737-A33F-3CE8F49BF107}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyGenerator", "KeyGenerator\KeyGenerator.csproj", "{80F6815A-5863-4C52-A4C7-F916E605B1F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,12 @@ Global
 		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{F76A2E50-00FE-4737-A33F-3CE8F49BF107}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

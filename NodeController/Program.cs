@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Reflection;
 using System.Threading;
 
 using WebListener;
 using JsonMessages;
+using JsonMessages.MessageTypes;
+using JsonMessages.MessageTypes.NodeStatus;
 
 namespace NodeController
 {
@@ -17,7 +20,9 @@ namespace NodeController
 
         private static string ConfigPath = string.Empty;
 
-		static void Main(string[] args)
+        private static ControllerConfig ConfigCache = null;
+
+        static void Main(string[] args)
 		{
             if (args.Length > 0)
                 ConfigPath = args[0];
@@ -37,6 +42,20 @@ namespace NodeController
 
             while (!Done())
             {
+                lock(Nodes)
+                {
+                    foreach(var node in Nodes)
+                    {
+                        if (node.Alive)
+                        {
+
+                        }
+                        else
+                        {
+                            // notify them that the node died
+                        }
+                    }
+                }
                 Thread.Sleep(100);
             }
 
@@ -45,14 +64,66 @@ namespace NodeController
 
         static ControllerConfig GetConfig()
         {
-            return ControllerConfig.ReadConfig(ConfigPath);
+            if (ConfigCache == null)
+                ConfigCache = ControllerConfig.ReadConfig(ConfigPath);
+            return ConfigCache;
         }
 
         static JsonMessage HandleControllMessage(JsonMessage request, JsonMessageHost.SessionManager sessions)
         {
-            var cfg = GetConfig();
+            if (!ValidateTokenRequest(request as TokenAuthenticatedRequest))
+                return null;
 
-            return null;
+            TokenAuthenticatedResponce responce = null;
+
+            if (request as NodeStatusRequest != null)
+                responce = BuildNodeStatus();
+
+            return SignResponce(responce, request as TokenAuthenticatedRequest);
+        }
+
+        static TokenAuthenticatedResponce SignResponce(TokenAuthenticatedResponce responce, TokenAuthenticatedRequest request)
+        {
+            if (responce != null && request != null)
+            {
+                var cfg = GetConfig();
+                var hostInfo = cfg.FindHost(request.HostID);
+                if (hostInfo != null)
+                    responce.Token = EncodingTools.Encryption.Encrypt(request.Token, hostInfo.PublicKey, hostInfo.APIKey);
+            }
+            
+            return responce;
+        }
+
+        static bool ValidateTokenRequest(TokenAuthenticatedRequest request)
+        {
+            if (request == null)
+                return false;
+
+            var cfg = GetConfig();
+            var hostInfo = cfg.FindHost(request.HostID);
+            if (hostInfo == null)
+                return false;
+
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            cfg.InitCrypto(hostInfo.Name, rsa);
+
+            return EncodingTools.Tokens.ValidateCurrentTimeToken(rsa, hostInfo.APIKey, request.Token, cfg.TokenKeyValidationRange);
+        }
+
+        private static NodeStatusResponce BuildNodeStatus()
+        {
+            NodeStatusResponce msg = new NodeStatusResponce();
+            lock (Nodes)
+            {
+                foreach(RunningNode node in Nodes)
+                {
+                    if (node.Alive)
+                        msg.ActiveNodes.Add(node.Info);
+                }
+            }
+
+            return msg;
         }
 
         private static bool Done()
@@ -69,6 +140,8 @@ namespace NodeController
             public DirectoryInfo NodeTempDir = null;
 
             public NodeIOLink Link = new NodeIOLink();
+
+            public NodeStatusResponce.NodeInfo Info = new NodeStatusResponce.NodeInfo();
 
             public RunningNode()
             {

@@ -52,6 +52,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EncodingTools\EncodingTools.csproj">
+      <Project>{f76a2e50-00fe-4737-a33f-3ce8f49bf107}</Project>
+      <Name>EncodingTools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JsonMessages\JsonMessages.csproj">
       <Project>{6c69042b-ae3c-4631-ad83-7ff808ed98a6}</Project>
       <Name>JsonMessages</Name>

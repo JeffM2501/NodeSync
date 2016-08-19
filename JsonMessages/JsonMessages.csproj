@@ -44,11 +44,13 @@
     <Compile Include="GeneralErrorMessage.cs" />
     <Compile Include="JsonMessage.cs" />
     <Compile Include="MessageProcessor.cs" />
+    <Compile Include="MessageTypes\NodeStatus\NodeStatusRequest.cs" />
+    <Compile Include="MessageTypes\NodeStatus\NodeStatusResponce.cs" />
+    <Compile Include="MessageTypes\TokenAuthenticatedRequest.cs" />
+    <Compile Include="MessageTypes\TokenAuthenticatedResponce.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MessageTypes\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
