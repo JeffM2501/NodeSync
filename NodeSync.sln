@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncodingTools", "EncodingTo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyGenerator", "KeyGenerator\KeyGenerator.csproj", "{80F6815A-5863-4C52-A4C7-F916E605B1F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LobbyNode", "LobbyNode\LobbyNode.csproj", "{B9D99356-98AC-4753-B804-BF294CA40FB0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +100,12 @@ Global
 		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{80F6815A-5863-4C52-A4C7-F916E605B1F6}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+		{B9D99356-98AC-4753-B804-BF294CA40FB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9D99356-98AC-4753-B804-BF294CA40FB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9D99356-98AC-4753-B804-BF294CA40FB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9D99356-98AC-4753-B804-BF294CA40FB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9D99356-98AC-4753-B804-BF294CA40FB0}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{B9D99356-98AC-4753-B804-BF294CA40FB0}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
