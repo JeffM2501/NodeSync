@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
 using Lidgren.Network;
@@ -15,14 +15,27 @@ namespace LobbyNode
 {
 	public class LobbyHost : Host, PeerHandler
 	{
-		public class NodeControllerLinkConfig
-		{
-			public string HostIdentifyer = string.Empty;
-			public string ControlConnectionURL = string.Empty;
+        public class NodeControllerLinkConfig
+        {
+            public string HostIdentifyer = string.Empty;
+            public string ControlConnectionURL = string.Empty;
 
-			public string OutboundPrivateKey = string.Empty;
-			public string InboundAPIKey = string.Empty;
-		}
+            public string OutboundPrivateKey = string.Empty;
+            public string InboundAPIKey = string.Empty;
+
+            // add other data here to describe the controller
+        }
+
+        public class Config
+        {
+            public int ListenPort = 22122;
+
+            public List<string> AuthenticationServerURLs = new List<string>();
+
+            public int MaxConnections = 200;
+            public List<string> ChatRelayServers = new List<string>();
+        }
+		
 		public class NodeControllerLink
 		{
 			public JsonClient ControlLink = null;
@@ -30,8 +43,6 @@ namespace LobbyNode
 			public NodeControllerLinkConfig Config = new NodeControllerLinkConfig();
 
 			public NodeStatusResponce LastStatusUpdate = null;
-
-			// add other data here to describe the controller
 		}
 
 		public List<NodeControllerLink> NodeControllerLinks = new List<NodeControllerLink>();
@@ -42,9 +53,13 @@ namespace LobbyNode
 			LoadConfigs(nodeConfigPath);
 		}
 
+        public static string MainConfigName = "lobby_conf.xml";
+
 		protected void LoadConfigs(string nodeConfigPath)
 		{
+            DirectoryInfo dir = new DirectoryInfo(nodeConfigPath);
 
+            XmlSerializer xml = new XmlSerializer(typeof(Config));
 		}
 
 		Peer PeerHandler.AddPeer(NetIncomingMessage msg)
