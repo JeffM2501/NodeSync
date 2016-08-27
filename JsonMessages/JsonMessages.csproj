@@ -41,6 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authentication\ChangePasswordRequest.cs" />
+    <Compile Include="Authentication\ChangePasswordResponce.cs" />
+    <Compile Include="Authentication\CreateUserRequest.cs" />
+    <Compile Include="Authentication\CreateUserResponce.cs" />
+    <Compile Include="Authentication\LoginUserResponce.cs" />
+    <Compile Include="Authentication\LoginUserRequest.cs" />
+    <Compile Include="Authentication\SessionSecuredRequest.cs" />
+    <Compile Include="Authentication\SessionSecuredResponce.cs" />
+    <Compile Include="Authentication\ValidateEmailTokenRequest.cs" />
+    <Compile Include="Authentication\ValidateEmailTokenResponce.cs" />
     <Compile Include="GeneralErrorMessage.cs" />
     <Compile Include="JsonMessage.cs" />
     <Compile Include="MessageProcessor.cs" />

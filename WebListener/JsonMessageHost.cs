@@ -15,20 +15,20 @@ namespace WebListener
 		{
 			public string SessionID = string.Empty;
 
-			public Dictionary<string, string> SessionItems = new Dictionary<string, string>();
+			public Dictionary<string, object> SessionItems = new Dictionary<string, object>();
 
-			public string GetItem(string key)
+			public object GetItem(string key)
 			{
 				lock(SessionItems)
 				{
 					if(SessionItems.ContainsKey(key))
 						return SessionItems[key];
 
-					return string.Empty;
+					return null;
 				}
 			}
 
-			public void SetItem(string key, string value)
+			public void SetItem(string key, object value)
 			{
 				lock(SessionItems)
 				{
@@ -67,7 +67,16 @@ namespace WebListener
 				}
 			}
 
-			public string GetSessionData(string id, string key)
+			public void ClearSessionData(string id)
+			{
+				lock(ActiveSessions)
+				{
+					if(ActiveSessions.ContainsKey(id))
+						ActiveSessions.Remove(id);
+				}
+			}
+
+			public object GetSessionData(string id, string key)
 			{
 				lock(ActiveSessions)
 				{
@@ -78,7 +87,7 @@ namespace WebListener
 				}
 			}
 
-			public void SetSessionData(string id, string key, string value)
+			public void SetSessionData(string id, string key, object value)
 			{
 				lock(ActiveSessions)
 				{

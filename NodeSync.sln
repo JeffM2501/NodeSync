@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyGenerator", "KeyGenerato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LobbyNode", "LobbyNode\LobbyNode.csproj", "{B9D99356-98AC-4753-B804-BF294CA40FB0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationNode", "AuthenticationNode\AuthenticationNode.csproj", "{6F8F826E-ED27-4E33-8E14-8207F4179A0A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +108,12 @@ Global
 		{B9D99356-98AC-4753-B804-BF294CA40FB0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B9D99356-98AC-4753-B804-BF294CA40FB0}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{B9D99356-98AC-4753-B804-BF294CA40FB0}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
+		{6F8F826E-ED27-4E33-8E14-8207F4179A0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F8F826E-ED27-4E33-8E14-8207F4179A0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F8F826E-ED27-4E33-8E14-8207F4179A0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F8F826E-ED27-4E33-8E14-8207F4179A0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F8F826E-ED27-4E33-8E14-8207F4179A0A}.UnityRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{6F8F826E-ED27-4E33-8E14-8207F4179A0A}.UnityRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
