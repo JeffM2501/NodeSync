@@ -19,14 +19,35 @@ namespace AuthenticationNode
 
 			AuthConfig cfg = AuthConfig.Load(configPath);
 
+			SetupAPI(cfg.PlugInsFolder);
+
 			Server s = new Server(cfg);
 
 			s.Startup();
 
-			while(true)
+			while(!s.TimeToQuit())
 				Thread.Sleep(100);
 
 			s.Shutdown();
+		}
+
+		static void SetupAPI(string path)
+		{
+
+			if (Directory.Exists(path))
+			{
+				foreach(var f in new DirectoryInfo(path).GetFiles("*.dll"))
+				{
+					try
+					{
+						APIManager.InitPluginsInAssembly(Assembly.LoadFile(f.FullName));
+					}
+					catch (System.Exception /*ex*/)
+					{
+						
+					}
+				}
+			}
 		}
 	}
 }

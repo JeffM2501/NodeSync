@@ -40,6 +40,11 @@ namespace AuthenticationNode
 			base.Shutdown();
 		}
 
+		internal virtual bool TimeToQuit()
+		{
+			return false;
+		}
+
 		// timeout protected session data
 		protected readonly string DateSessionFieldName = "AUTH_SERVER_LAST_SESSION_DATE";
 		protected readonly string ValidLoginString = "ValidLogin";
@@ -155,7 +160,9 @@ namespace AuthenticationNode
 
 		protected virtual string GenerateAuthToken(string userID, RijndaelManaged crypto)
 		{
-			// TODO, let plugins register token generators
+			if(API.LastProcessor != null)
+				return API.LastProcessor.GenerateAuthToken(userID, crypto);
+			
 			string mins = EncodingTools.UnixTime.GetTokenMinutes().ToString();
 
 			string hash = HashPassword(mins, Convert.ToBase64String(crypto.Key));
@@ -164,7 +171,8 @@ namespace AuthenticationNode
 
 		protected virtual bool ValidateAuthToken(string userID, string token, RijndaelManaged crypto)
 		{
-			// TODO, let plugins register token validators
+			if(API.LastProcessor != null)
+				return API.LastProcessor.ValidateAuthToken(userID, token, crypto);
 
 			string[] parts = token.Split(":".ToCharArray(), 2);
 			if(parts.Length != 2)
