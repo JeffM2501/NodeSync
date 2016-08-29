@@ -148,6 +148,18 @@ namespace AuthenticationNode
 			return results;
 		}
 
+		public virtual bool UpdateUserPassword(string userID, string passhash)
+		{
+			lock(DBConnection)
+			{
+				string sql = "Update authentication SET PassHash=@hash WHERE UserID = @uid";
+				SQLiteCommand command = new SQLiteCommand(sql, DBConnection);
+				command.Parameters.Add(new SQLiteParameter("@userID", userID));
+				command.Parameters.Add(new SQLiteParameter("@hash", passhash));
+				return command.ExecuteNonQuery() == 1;
+			}
+		}
+
 		public virtual bool ValidateEmailToken(string userID, string token, DateTime lowerLimit)
 		{
 			DateTime dbTokenTime = DateTime.MinValue;

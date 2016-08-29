@@ -11,35 +11,54 @@ namespace WebConnector
 {
     public class JsonClient
     {
-        protected class PendingJob
+		public class JsonMessageResponceArgs : EventArgs
+		{
+			public JsonMessage ResponceMessage = null;
+			public JsonMessage RequestMessage = null;
+
+			public object Token = null;
+		}
+
+		public event EventHandler<JsonMessageResponceArgs> ReceivedResponce = null;
+
+
+		protected class PendingJob
         {
             public WebRequest Requester = null;
             public JsonMessage Request = null;
             public object MessagToken = null;
 
 			public IAsyncResult AsyncResult = null;
-        }
+
+			public event EventHandler<JsonMessageResponceArgs> ResponceCallback = null;
+
+			public void CallResponce(JsonMessageResponceArgs args)
+			{
+				ResponceCallback?.Invoke(this, args);
+			}
+		}
 
         protected List<PendingJob> Jobs = new List<PendingJob>();
       
         private string BaseURL = string.Empty;
 
-        public class JsonMessageResponceArgs : EventArgs
-        {
-            public JsonMessage ResponceMessage = null;
-            public JsonMessage RequestMessage = null;
-
-            public object Token = null;
-        }
-
-        public event EventHandler<JsonMessageResponceArgs> ReceivedResponce = null;
-
+       
         public JsonClient(string url)
         {
-            BaseURL = url;
+			SetURL(url);
         }
 
-        public void SendMessage(JsonMessage request, object token)
+		public void SetURL(string url)
+		{
+			BaseURL = url;
+		}
+
+		public void SendMessage(JsonMessage request, object token)
+		{
+			SendMessage(request, token, ReceivedResponce);
+		}
+
+		public void SendMessage(JsonMessage request, object token, EventHandler<JsonMessageResponceArgs> handler)
         {
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(MessageProcessor.PackMessage(request));
 
@@ -52,6 +71,8 @@ namespace WebConnector
 			job.Requester.ContentType = "application/json";
 			job.Requester.Method = "POST";
 			job.Requester.ContentLength = buffer.Length;
+			if (handler != null)
+				job.ResponceCallback += handler;
 
 			var stream = job.Requester.GetRequestStream();
 			stream.Write(buffer, 0, buffer.Length);
@@ -92,7 +113,7 @@ namespace WebConnector
 
 				args.ResponceMessage = MessageProcessor.ParseMessage(outString);
 
-                ReceivedResponce?.Invoke(this, args);
+				job.CallResponce(args);
             }
         }
 

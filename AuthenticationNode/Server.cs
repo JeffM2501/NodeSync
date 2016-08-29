@@ -108,6 +108,10 @@ namespace AuthenticationNode
 				responce = LoginUser(request as LoginUserRequest);
 			else if(request as ValidateEmailTokenRequest != null)
 				responce = ValidateEmailToken(request as ValidateEmailTokenRequest);
+			else if(request as ChangePasswordRequest != null)
+				responce = ChangePassword(request as ChangePasswordRequest);
+			else if(request as ValidateAuthenticationTokenRequest != null)
+				responce = ValidateAuthenticationToken(request as ValidateAuthenticationTokenRequest);
 
 			// ensure the session ID gets passed on
 			if (responce as SessionSecuredResponce != null && request as SessionSecuredRequest != null)
@@ -193,6 +197,36 @@ namespace AuthenticationNode
 			return true;
 		}
 
+		protected RijndaelManaged BuildCrypto(string tokenSalt)
+		{
+			RijndaelManaged crypto = new RijndaelManaged();
+			crypto.BlockSize = 256;
+			string[] parts = tokenSalt.Split(":".ToCharArray(), 2);
+
+			if(parts.Length == 2)
+			{
+				string key = parts[0];
+				string iv = parts[1];
+
+				crypto.Key = Convert.FromBase64String(key);
+				crypto.IV = Convert.FromBase64String(iv);
+				return crypto;
+			}
+			return null;
+		}
+
+		protected RijndaelManaged CheckPassword(string userID, string tokenSalt, string password)
+		{
+				// build the salt
+			RijndaelManaged crypto = BuildCrypto(tokenSalt);
+			if (crypto != null)
+			{
+				if(DB.ValidateUser(userID, HashPassword(password, Convert.ToBase64String(crypto.IV))))
+					return crypto;
+			}
+			return null;
+		}
+
 		protected JsonMessage LoginUser(LoginUserRequest request)
 		{
 			LoginUserResponce responce = new LoginUserResponce();
@@ -204,31 +238,16 @@ namespace AuthenticationNode
 				var login = DB.GetAuthFromEmail(request.Email);
 				if (login != null)
 				{
-					// build the salt
-					RijndaelManaged crypto = new RijndaelManaged();
-					crypto.BlockSize = 256;
-					string[] parts = login.TokenSalt.Split(":".ToCharArray(), 2);
-
-					if (parts.Length == 2)
+					var crypto = CheckPassword(login.UserID, login.TokenSalt, request.Password);
+					if (crypto != null)
 					{
-						string key = parts[0];
-						string iv = parts[1];
+						responce.OK = true;
+						responce.UserID = login.UserID;
 
-						crypto.Key = Convert.FromBase64String(key);
-						crypto.IV = Convert.FromBase64String(iv);
+						responce.Responce = GenerateAuthToken(login.UserID, crypto);
 
-						if (DB.ValidateUser(login.UserID, HashPassword(request.Password, iv)))
-						{
-							// tell them it worked
-							responce.OK = true;
-							responce.UserID = login.UserID;
-
-							responce.Responce = GenerateAuthToken(login.UserID,crypto);
-
-							responce.SessionID = CreateSession();
-							SetSessionData(responce.SessionID, ValidLoginString, login.UserID);
-						}
-					}		
+						responce.SessionID = CreateSession();
+					}
 				}
 			}
 			return responce;
@@ -272,6 +291,52 @@ namespace AuthenticationNode
 					responce.OK = true;
 					responce.Responce = "Valid";
 				}
+			}
+
+			return responce;
+		}
+
+		protected ChangePasswordResponce ChangePassword(ChangePasswordRequest request)
+		{
+			ChangePasswordResponce responce = new ChangePasswordResponce();
+			responce.OK = false;
+
+			string uid = GetSessionDataS(request.SessionID, ValidLoginString);
+
+			string tokenSalt = DB.GetTokenSaltFromUID(uid);
+
+			var crypto = CheckPassword(uid, tokenSalt, request.OldPassword);
+			if(crypto != null)
+			{
+				string newHash = HashPassword(request.NewPassword, Convert.ToBase64String(crypto.IV));
+				if (DB.UpdateUserPassword(uid,newHash))
+				{
+					responce.OK = true;
+					responce.Responce = "Updated";
+				}
+				else
+					responce.Responce = "Invalid New Password";
+			}
+			else
+				responce.Responce = "Invalid Credentials";
+
+			return responce;
+		}
+
+		protected ValidateAuthenticationTokenResponce ValidateAuthenticationToken(ValidateAuthenticationTokenRequest request)
+		{
+			ValidateAuthenticationTokenResponce responce = new ValidateAuthenticationTokenResponce();
+			responce.OK = false;
+			responce.Responce = "Invalid";
+
+			string tokenSalt = DB.GetTokenSaltFromUID(request.UserID);
+
+			var crypto = BuildCrypto(tokenSalt);
+
+			if (ValidateAuthToken(request.UserID, request.Token, crypto))
+			{
+				responce.OK = true;
+				responce.Responce = "Valid";
 			}
 
 			return responce;
