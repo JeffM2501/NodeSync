@@ -47,6 +47,8 @@
     <Compile Include="Authentication\CreateUserResponce.cs" />
     <Compile Include="Authentication\LoginUserResponce.cs" />
     <Compile Include="Authentication\LoginUserRequest.cs" />
+    <Compile Include="Authentication\Peers\PeerAddUserRequest.cs" />
+    <Compile Include="Authentication\Peers\PeerResponce.cs" />
     <Compile Include="Authentication\SessionSecuredRequest.cs" />
     <Compile Include="Authentication\SessionSecuredResponce.cs" />
     <Compile Include="Authentication\ValidateAuthenticationTokenRequest.cs" />

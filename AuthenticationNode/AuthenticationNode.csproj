@@ -86,6 +86,10 @@
       <Project>{6c69042b-ae3c-4631-ad83-7ff808ed98a6}</Project>
       <Name>JsonMessages</Name>
     </ProjectReference>
+    <ProjectReference Include="..\WebConnector\WebConnector.csproj">
+      <Project>{3b2e8705-f4eb-4bba-a5c1-dde6db5fce48}</Project>
+      <Name>WebConnector</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WebListener\WebListener.csproj">
       <Project>{0b575c85-1a00-4e91-b1cb-25035cfbfeae}</Project>
       <Name>WebListener</Name>

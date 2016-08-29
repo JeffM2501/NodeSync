@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Net.Mail;
 
 using System.Security.Cryptography;
 
 using JsonMessages;
 using JsonMessages.Authentication;
+using JsonMessages.Authentication.Peers;
 using WebListener;
+using WebConnector;
 using System.Net;
 
 namespace AuthenticationNode
@@ -18,6 +20,9 @@ namespace AuthenticationNode
 		protected AuthDB DB = null;
 
 		protected AuthConfig Config = null;
+
+        protected Dictionary<string, JsonClient> PeerConnections = new Dictionary<string, JsonClient>();
+
 		public Server(AuthConfig cfg)
 		{
 			Config = cfg;
@@ -112,9 +117,11 @@ namespace AuthenticationNode
 				responce = ChangePassword(request as ChangePasswordRequest);
 			else if(request as ValidateAuthenticationTokenRequest != null)
 				responce = ValidateAuthenticationToken(request as ValidateAuthenticationTokenRequest);
+            else if (request as PeerAddUserRequest != null)
+                responce = PeerAddUser(request as PeerAddUserRequest);
 
-			// ensure the session ID gets passed on
-			if (responce as SessionSecuredResponce != null && request as SessionSecuredRequest != null)
+            // ensure the session ID gets passed on
+            if (responce as SessionSecuredResponce != null && request as SessionSecuredRequest != null)
 				(responce as SessionSecuredResponce).SessionID = (request as SessionSecuredRequest).SessionID;
 
 			return responce;
@@ -283,7 +290,7 @@ namespace AuthenticationNode
 			responce.Responce = "Invalid";
 			responce.SessionID = request.SessionID;
 
-			if(request != null)
+			if(request != null && Config.AllowRegistration)
 			{
 				// email tokens are good for a day
 				if (DB.ValidateEmailToken(request.UserID, request.EmailToken, (DateTime.UtcNow - new TimeSpan(1, 0, 0, 0))))
@@ -301,26 +308,29 @@ namespace AuthenticationNode
 			ChangePasswordResponce responce = new ChangePasswordResponce();
 			responce.OK = false;
 
-			string uid = GetSessionDataS(request.SessionID, ValidLoginString);
+            if (Config.AllowRegistration && request != null)
+            {
+                string uid = GetSessionDataS(request.SessionID, ValidLoginString);
 
-			string tokenSalt = DB.GetTokenSaltFromUID(uid);
+                string tokenSalt = DB.GetTokenSaltFromUID(uid);
 
-			var crypto = CheckPassword(uid, tokenSalt, request.OldPassword);
-			if(crypto != null)
-			{
-				string newHash = HashPassword(request.NewPassword, Convert.ToBase64String(crypto.IV));
-				if (DB.UpdateUserPassword(uid,newHash))
-				{
-					responce.OK = true;
-					responce.Responce = "Updated";
-				}
-				else
-					responce.Responce = "Invalid New Password";
-			}
-			else
-				responce.Responce = "Invalid Credentials";
+                var crypto = CheckPassword(uid, tokenSalt, request.OldPassword);
+                if (crypto != null)
+                {
+                    string newHash = HashPassword(request.NewPassword, Convert.ToBase64String(crypto.IV));
+                    if (DB.UpdateUserPassword(uid, newHash))
+                    {
+                        responce.OK = true;
+                        responce.Responce = "Updated";
+                    }
+                    else
+                        responce.Responce = "Invalid New Password";
+                }
+                else
+                    responce.Responce = "Invalid Credentials";
+            }
 
-			return responce;
+            return responce;
 		}
 
 		protected ValidateAuthenticationTokenResponce ValidateAuthenticationToken(ValidateAuthenticationTokenRequest request)
@@ -349,5 +359,63 @@ namespace AuthenticationNode
 
 			return Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(toHash)));
 		}
-	}
+
+        protected PeerResponce PeerAddUser(PeerAddUserRequest request )
+        {
+            PeerResponce responce = new PeerResponce();
+            responce.OK = false;
+
+            if (request != null)
+            {
+                AuthConfig.APIPeer inPeer = Config.InboundUpdatePeers.Find(x => x.Name == request.Name);
+
+                if(inPeer != null)
+                {
+                    RijndaelManaged crypto = BuildCrypto(inPeer.APIKey);
+
+                    MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(request.Key));
+                    StreamReader sr = new StreamReader(new CryptoStream(ms, crypto.CreateDecryptor(), CryptoStreamMode.Read));
+                    string decodeKey = sr.ReadToEnd();
+                    sr.Close();
+                    ms.Close();
+
+                    if (decodeKey == request.UserID)    // they know the secret!
+                    {
+                        DB.UpdateUserInfo(request.UserID, request.Email, request.PassHash, request.TokenSalt);
+                        responce.OK = true;
+                    }
+                }
+            }
+
+            return responce;
+        }
+
+        protected void SendUserUpdate(string userID)
+        {
+            PeerAddUserRequest request = new PeerAddUserRequest();
+
+            request.UserID = userID;
+            request.TokenSalt = DB.GetTokenSaltFromUID(userID);
+            request.PassHash = DB.GetPassHashFromID(userID);
+            request.Email = DB.GetEmailFromID(userID);
+
+            foreach(var peer in Config.OutboundUpdatePeers)
+            {
+                JsonClient con = null;
+
+                lock (PeerConnections)
+                {
+                    if (!PeerConnections.ContainsKey(peer.Name))
+                        PeerConnections.Add(peer.Name, new JsonClient(peer.Host));
+
+                    // TODO, Cache the crypto.
+                    con = PeerConnections[peer.Name];
+                }
+
+                request.Name = peer.Name;
+
+                con.SendMessage(request, null, null);
+             }
+        }
+    }
 }

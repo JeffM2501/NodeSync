@@ -34,7 +34,7 @@ namespace AuthenticationNode
 			return GetUserIDFromEmail(email) != string.Empty;
 		}
 
-		public virtual string GetUserIDFromEmail(string email)
+        public virtual string GetUserIDFromEmail(string email)
 		{
 			lock(DBConnection)
 			{
@@ -51,7 +51,20 @@ namespace AuthenticationNode
 			}
 		}
 
-		public class AuthenticationInformation
+        public virtual bool CheckUserIDExists(string userID)
+        {
+            lock (DBConnection)
+            {
+                string sql = "SELECT UserID FROM users WHERE UserID = @userID";
+                SQLiteCommand command = new SQLiteCommand(sql, DBConnection);
+                command.Parameters.Add(new SQLiteParameter("@userID", userID));
+                SQLiteDataReader reader = command.ExecuteReader();
+
+                return reader.HasRows;
+            }
+        }
+
+        public class AuthenticationInformation
 		{
 			public string UserID = string.Empty;
 			public string TokenSalt = string.Empty;
@@ -85,7 +98,39 @@ namespace AuthenticationNode
 			}
 		}
 
-		protected bool CheckUIDExists(string uid)
+        public virtual string GetEmailFromID(string uid)
+        {
+            lock (DBConnection)
+            {
+                string sql = "SELECT Email FROM users WHERE UserID = @uid";
+                SQLiteCommand command = new SQLiteCommand(sql, DBConnection);
+                command.Parameters.Add(new SQLiteParameter("@uid", uid));
+                SQLiteDataReader reader = command.ExecuteReader();
+
+                if (!reader.HasRows)
+                    return string.Empty;
+
+                return reader.GetString(0);
+            }
+        }
+
+        public virtual string GetPassHashFromID(string uid)
+        {
+            lock (DBConnection)
+            {
+                string sql = "SELECT PassHash FROM authentication WHERE UserID = @uid AND Active = 1";
+                SQLiteCommand command = new SQLiteCommand(sql, DBConnection);
+                command.Parameters.Add(new SQLiteParameter("@uid", uid));
+                SQLiteDataReader reader = command.ExecuteReader();
+
+                if (!reader.HasRows)
+                    return string.Empty;
+
+                return reader.GetString(0);
+            }
+        }
+
+        protected bool CheckUIDExists(string uid)
 		{
 			lock(DBConnection)
 			{
@@ -148,7 +193,41 @@ namespace AuthenticationNode
 			return results;
 		}
 
-		public virtual bool UpdateUserPassword(string userID, string passhash)
+        public virtual void UpdateUserInfo(string userID, string email, string passhash, string salt)
+        {
+            if (!CheckUIDExists(userID))
+            {
+                string sql = "INSERT INTO users (UserID, Email, Active) values (@uid, @email, 0)";
+                SQLiteCommand command = new SQLiteCommand(sql, DBConnection);
+                command.Parameters.Add(new SQLiteParameter("@uid", userID));
+                command.Parameters.Add(new SQLiteParameter("@email", email));
+                command.ExecuteNonQuery();
+
+                sql = "INSERT INTO authentication (UserID, PassHash, TokenSalt, Active) values (@uid, @passhash, @salt, 1)";
+                command = new SQLiteCommand(sql, DBConnection);
+                command.Parameters.Add(new SQLiteParameter("@uid", userID));
+                command.Parameters.Add(new SQLiteParameter("@passhash", passhash));
+                command.Parameters.Add(new SQLiteParameter("@salt", salt));
+                command.ExecuteNonQuery();
+            }
+            else
+            {
+                string sql = "Update users SET Email=@email WHERE UserID = @uid";
+                SQLiteCommand command = new SQLiteCommand(sql, DBConnection);
+                command.Parameters.Add(new SQLiteParameter("@email", email));
+                command.Parameters.Add(new SQLiteParameter("@uid", userID));
+                command.ExecuteNonQuery();
+
+                sql = "Update authentication SET PassHash=@hash, TokenSalt=@salt WHERE UserID = @uid";
+                command = new SQLiteCommand(sql, DBConnection);
+                command.Parameters.Add(new SQLiteParameter("@userID", userID));
+                command.Parameters.Add(new SQLiteParameter("@hash", passhash));
+                command.Parameters.Add(new SQLiteParameter("@salt", salt));
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public virtual bool UpdateUserPassword(string userID, string passhash)
 		{
 			lock(DBConnection)
 			{
