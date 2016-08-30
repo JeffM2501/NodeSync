@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Threading;
 using System.Net.Mail;
 
 using System.Security.Cryptography;
@@ -21,7 +22,89 @@ namespace AuthenticationNode
 
 		protected AuthConfig Config = null;
 
-        protected Dictionary<string, JsonClient> PeerConnections = new Dictionary<string, JsonClient>();
+		public class PeerConnection
+		{
+			public string Name = string.Empty;
+
+			public JsonClient Connection = null;
+			public List<string> PendingUpdates = new List<string>();
+
+			protected RijndaelManaged Crypto = null;
+			protected ICryptoTransform Encrypter = null;
+
+			protected Thread Worker = null;
+			protected AuthDB DB = null;
+
+			public PeerConnection(string name, string host, RijndaelManaged c, AuthDB db)
+			{
+				Connection = new JsonClient(host);
+
+				Name = name;
+				Crypto = c;
+				DB = db;
+
+				if (Crypto != null)
+					Encrypter = Crypto.CreateEncryptor();
+			}
+
+			public void Add(string uid)
+			{
+				lock(PendingUpdates)
+					PendingUpdates.Add(uid);
+
+				if (Worker == null)
+				{
+					Worker = new Thread(new ThreadStart(Process));
+					Worker.Start();
+				}
+			}
+
+			private string PopUserID()
+			{
+				string id = string.Empty;
+				lock(PendingUpdates)
+				{
+					if (PendingUpdates.Count > 0)
+					{
+						id = PendingUpdates[0];
+						PendingUpdates.RemoveAt(0);
+					}
+				}
+				return id;
+			}
+
+			private void Process()
+			{
+				string id = PopUserID();
+				while (id != string.Empty)
+				{
+					if (Crypto != null)
+					{
+						PeerAddUserRequest request = new PeerAddUserRequest();
+
+						request.UserID = id;
+						request.TokenSalt = DB.GetTokenSaltFromUID(id);
+						request.PassHash = DB.GetPassHashFromID(id);
+						request.Email = DB.GetEmailFromID(id);
+
+						request.Name = Name;
+
+						MemoryStream ms = new MemoryStream();
+						StreamWriter sw = new StreamWriter(new CryptoStream(ms, Encrypter, CryptoStreamMode.Write));
+						sw.Write(request.UserID);
+						sw.Close();
+						ms.Close();
+
+						request.Key = Convert.ToBase64String(ms.GetBuffer());
+
+						Connection.SendMessage(request, null, null);
+					}
+					id = PopUserID();
+				}
+			}
+		}
+
+        protected Dictionary<string, PeerConnection> PeerConnections = new Dictionary<string, PeerConnection>();
 
 		public Server(AuthConfig cfg)
 		{
@@ -32,6 +115,12 @@ namespace AuthenticationNode
 			DB.Startup(cfg.AuthDBLocation);
 
 			this.MessageProcessor = ProcessAuthMessage;
+
+			foreach(var o in cfg.OutboundUpdatePeers)
+			{
+				var p = new PeerConnection(o.Name, o.Host, BuildCrypto(o.APIKey), DB);
+				PeerConnections.Add(o.Name, p);
+			}
 		}
 
 		protected AuthDB GetAuthDB()
@@ -160,6 +249,8 @@ namespace AuthenticationNode
 					// tell them it worked
 					responce.OK = true;
 					responce.Responce = user.UserID;
+
+					SendUserUpdate(user.UserID);
 				}
 			}
 			return responce;
@@ -297,6 +388,7 @@ namespace AuthenticationNode
 				{
 					responce.OK = true;
 					responce.Responce = "Valid";
+					SendUserUpdate(request.UserID);
 				}
 			}
 
@@ -322,7 +414,9 @@ namespace AuthenticationNode
                     {
                         responce.OK = true;
                         responce.Responce = "Updated";
-                    }
+
+						SendUserUpdate(uid);
+					}
                     else
                         responce.Responce = "Invalid New Password";
                 }
@@ -373,7 +467,7 @@ namespace AuthenticationNode
                 {
                     RijndaelManaged crypto = BuildCrypto(inPeer.APIKey);
 
-                    MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(request.Key));
+                    MemoryStream ms = new MemoryStream(Convert.FromBase64String(request.Key));
                     StreamReader sr = new StreamReader(new CryptoStream(ms, crypto.CreateDecryptor(), CryptoStreamMode.Read));
                     string decodeKey = sr.ReadToEnd();
                     sr.Close();
@@ -392,30 +486,8 @@ namespace AuthenticationNode
 
         protected void SendUserUpdate(string userID)
         {
-            PeerAddUserRequest request = new PeerAddUserRequest();
-
-            request.UserID = userID;
-            request.TokenSalt = DB.GetTokenSaltFromUID(userID);
-            request.PassHash = DB.GetPassHashFromID(userID);
-            request.Email = DB.GetEmailFromID(userID);
-
-            foreach(var peer in Config.OutboundUpdatePeers)
-            {
-                JsonClient con = null;
-
-                lock (PeerConnections)
-                {
-                    if (!PeerConnections.ContainsKey(peer.Name))
-                        PeerConnections.Add(peer.Name, new JsonClient(peer.Host));
-
-                    // TODO, Cache the crypto.
-                    con = PeerConnections[peer.Name];
-                }
-
-                request.Name = peer.Name;
-
-                con.SendMessage(request, null, null);
-             }
+			foreach(var peer in PeerConnections)
+				peer.Value.Add(userID);
         }
     }
 }

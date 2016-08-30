@@ -20,7 +20,6 @@ namespace AuthTester
 		[STAThread]
 		static void Main(string[] args )
 		{
-
 			while (!done)
 			{
 				Console.WriteLine("Enter Command");

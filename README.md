@@ -10,7 +10,6 @@ A C# implmentation of this diagram as a proof of concept
 ## Authentication System
 
 * Logging
-* Cluster Update Messages
 * API keys for validation
 
 ## Lobby Server

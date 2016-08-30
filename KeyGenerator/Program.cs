@@ -17,7 +17,17 @@ namespace KeyGenerator
             Console.WriteLine("Public Key (For Node Controller)");
             Console.WriteLine(Convert.ToBase64String(rsa.ExportCspBlob(false)));
 
-            /*
+			RijndaelManaged rdm = new RijndaelManaged();
+			rdm.GenerateKey();
+			rdm.GenerateIV();
+
+			string key = Convert.ToBase64String(rdm.Key);
+			string iv = Convert.ToBase64String(rdm.IV);
+			Console.WriteLine();
+			Console.WriteLine("API Key for AuthNodes");
+			Console.WriteLine(key + ":" + iv);
+
+			/*
             uint min = EncodingTools.UnixTime.GetTokenMinutes();
             byte[] t = BitConverter.GetBytes(min);
             byte[] hash = rsa.SignData(t, new SHA1CryptoServiceProvider());
@@ -46,7 +56,7 @@ namespace KeyGenerator
             Console.WriteLine("Generated code " + code.ToString());
             */
 
-            Console.WriteLine();
+			Console.WriteLine();
             Console.WriteLine("Press Any key to exit");
             Console.ReadKey();
         }

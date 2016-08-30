@@ -5,10 +5,18 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
+
 using Lidgren.Network;
+
 using Listener;
+
 using WebConnector;
+
 using JsonMessages.MessageTypes.NodeStatus;
+
+using NetworkingMessages;
+using NetworkingMessages.Messages;
+using LobbyNode.MessageProcessors;
 
 
 namespace LobbyNode
@@ -30,12 +38,23 @@ namespace LobbyNode
         {
             public int ListenPort = 22122;
 
-            public List<string> AuthenticationServerURLs = new List<string>();
+			public class AuthenticationNodeInfo
+			{
+				public string Name = string.Empty;
+				public string APIKey = string.Empty;
+				public string Host = string.Empty;
+			}
+            public List<AuthenticationNodeInfo> AuthenticationEndpoints = new List<AuthenticationNodeInfo>();
+
+			public int AutenticationProcessorThreads = 1;
 
             public int MaxConnections = 200;
-            public List<string> ChatRelayServers = new List<string>();
+
+			internal List<NodeControllerLinkConfig> NodeControllers = new List<NodeControllerLinkConfig>();
         }
-		
+
+		public Config LobbyConfig = null;
+
 		public class NodeControllerLink
 		{
 			public JsonClient ControlLink = null;
@@ -47,39 +66,106 @@ namespace LobbyNode
 
 		public List<NodeControllerLink> NodeControllerLinks = new List<NodeControllerLink>();
 
+		protected List<AuthenticaitonProcessor> AuthenticationPool = new List<AuthenticaitonProcessor>();
+		protected int LastAuthenticator = 0;
+
 		public LobbyHost(string nodeConfigPath) : base()
 		{
 			DefaultPeerHandler = this;
 			LoadConfigs(nodeConfigPath);
+
+			SetupProcessingPools();
 		}
 
-        public static string MainConfigName = "lobby_conf.xml";
+		public override void Shutdown()
+		{
+			foreach(var p in AuthenticationPool)
+				p.Stop();
+			
+			base.Shutdown();
+		}
+
+		protected void SetupProcessingPools()
+		{
+			for(int i = 0; i < LobbyConfig.AutenticationProcessorThreads; i++)
+				AuthenticationPool.Add(new AuthenticaitonProcessor(LobbyConfig));
+		}
+
+		protected AuthenticaitonProcessor GetNextAuthProcessor()
+		{
+			if(LobbyConfig.AutenticationProcessorThreads != 1)
+			{
+				LastAuthenticator++;
+				if(LastAuthenticator >= LobbyConfig.AutenticationProcessorThreads)
+					LastAuthenticator = 0;
+			}
+			return AuthenticationPool[LastAuthenticator];
+		}
+
+		public static string MainConfigName = "lobby_conf.xml";
 
 		protected void LoadConfigs(string nodeConfigPath)
 		{
-            DirectoryInfo dir = new DirectoryInfo(nodeConfigPath);
-
+			LobbyConfig = null;
+			DirectoryInfo dir = new DirectoryInfo(nodeConfigPath);
             XmlSerializer xml = new XmlSerializer(typeof(Config));
+			try
+			{
+				FileInfo file = new FileInfo(Path.Combine(dir.FullName, MainConfigName));
+				StreamReader sr = file.OpenText();
+				LobbyConfig = xml.Deserialize(sr) as Config;
+				sr.Close();
+				if(LobbyConfig != null)
+				{
+					xml = new XmlSerializer(typeof(NodeControllerLinkConfig));
+					foreach(FileInfo nodeConfig in dir.GetFiles("*.node.xml"))
+					{
+						sr = nodeConfig.OpenText();
+						NodeControllerLinkConfig node = xml.Deserialize(sr) as NodeControllerLinkConfig;
+						sr.Close();
+						if (node != null)
+							LobbyConfig.NodeControllers.Add(node);
+					}
+				}
+			}
+			catch (System.Exception /*ex*/)
+			{
+				
+			}
+
+			if (LobbyConfig == null)
+				LobbyConfig = new Config();
 		}
 
 		Peer PeerHandler.AddPeer(NetIncomingMessage msg)
 		{
-			throw new NotImplementedException();
+			LobbyUser user = new LobbyUser();
+			user.MessageProcessor = GetNextAuthProcessor();
+			if (user.MessageProcessor != null)
+				user.MessageProcessor.PeerAdded(user);
+			return user;
 		}
 
 		void PeerHandler.DisconnectPeer(string reason, Peer peer)
 		{
-			throw new NotImplementedException();
+			peer.SocketConnection.Disconnect(reason);
 		}
 
 		void PeerHandler.PeerDisconnected(string reason, Peer peer)
 		{
-			throw new NotImplementedException();
+			LobbyUser user = peer as LobbyUser;
+			if(user != null && user.MessageProcessor != null)
+				user.MessageProcessor.PeerRemoved(user);
 		}
 
 		void PeerHandler.PeerReceiveData(NetIncomingMessage msg, Peer peer)
 		{
-			throw new NotImplementedException();
+			LobbyUser user = peer as LobbyUser;
+			if(user == null)
+				return;
+
+			if(user.MessageProcessor != null)
+				user.MessageProcessor.ReceivePeerData(MessageFactory.ParseMessage(msg), user);
 		}
 	}
 }
