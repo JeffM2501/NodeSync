@@ -14,6 +14,8 @@ using WebListener;
 using WebConnector;
 using System.Net;
 
+using EncodingTools;
+
 namespace AuthenticationNode
 {
 	public class Server : JsonMessageHost
@@ -118,7 +120,7 @@ namespace AuthenticationNode
 
 			foreach(var o in cfg.OutboundUpdatePeers)
 			{
-				var p = new PeerConnection(o.Name, o.Host, BuildCrypto(o.APIKey), DB);
+				var p = new PeerConnection(o.Name, o.Host, Encryption.BuildCrypto(o.APIKey), DB);
 				PeerConnections.Add(o.Name, p);
 			}
 		}
@@ -295,28 +297,10 @@ namespace AuthenticationNode
 			return true;
 		}
 
-		protected RijndaelManaged BuildCrypto(string tokenSalt)
-		{
-			RijndaelManaged crypto = new RijndaelManaged();
-			crypto.BlockSize = 256;
-			string[] parts = tokenSalt.Split(":".ToCharArray(), 2);
-
-			if(parts.Length == 2)
-			{
-				string key = parts[0];
-				string iv = parts[1];
-
-				crypto.Key = Convert.FromBase64String(key);
-				crypto.IV = Convert.FromBase64String(iv);
-				return crypto;
-			}
-			return null;
-		}
-
 		protected RijndaelManaged CheckPassword(string userID, string tokenSalt, string password)
 		{
 				// build the salt
-			RijndaelManaged crypto = BuildCrypto(tokenSalt);
+			RijndaelManaged crypto = Encryption.BuildCrypto(tokenSalt);
 			if (crypto != null)
 			{
 				if(DB.ValidateUser(userID, HashPassword(password, Convert.ToBase64String(crypto.IV))))
@@ -435,7 +419,7 @@ namespace AuthenticationNode
 
 			string tokenSalt = DB.GetTokenSaltFromUID(request.UserID);
 
-			var crypto = BuildCrypto(tokenSalt);
+			var crypto = Encryption.BuildCrypto(tokenSalt);
 
 			if (ValidateAuthToken(request.UserID, request.Token, crypto))
 			{
@@ -465,7 +449,7 @@ namespace AuthenticationNode
 
                 if(inPeer != null)
                 {
-                    RijndaelManaged crypto = BuildCrypto(inPeer.APIKey);
+                    RijndaelManaged crypto = Encryption.BuildCrypto(inPeer.APIKey);
 
                     MemoryStream ms = new MemoryStream(Convert.FromBase64String(request.Key));
                     StreamReader sr = new StreamReader(new CryptoStream(ms, crypto.CreateDecryptor(), CryptoStreamMode.Read));

@@ -9,11 +9,11 @@ namespace LobbyNode.MessageProcessors
 {
 	public class AuthenticaitonProcessor : ThreadedMessageProcessor
 	{
-		LobbyHost.Config LobbyConfig = null;
+		LobbyHost Host = null;
 
-		public AuthenticaitonProcessor(LobbyHost.Config config)
+		public AuthenticaitonProcessor(LobbyHost host)
 		{
-			LobbyConfig = config;
+            Host = host;
 			Start();
 		}
 
@@ -32,6 +32,9 @@ namespace LobbyNode.MessageProcessors
 		{
 			base.HandleUserAdded(user);
 
+            user.SetAttributeB("ValidConnection", false);
+            user.SetAttributeB("ValidAuthentication", false);
+
 			// start ban checks
 		}
 
@@ -41,5 +44,12 @@ namespace LobbyNode.MessageProcessors
 
 			// process auth messages
 		}
-	}
+
+        protected override void Tick()
+        {
+            base.Tick();
+
+            // check for deaded connections
+        }
+    }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
@@ -13,6 +13,7 @@ using Listener;
 using WebConnector;
 
 using JsonMessages.MessageTypes.NodeStatus;
+using JsonMessages.Authentication;
 
 using NetworkingMessages;
 using NetworkingMessages.Messages;
@@ -43,6 +44,25 @@ namespace LobbyNode
 				public string Name = string.Empty;
 				public string APIKey = string.Empty;
 				public string Host = string.Empty;
+
+                internal JsonClient WebConnection = null;
+                internal RijndaelManaged Crypto = null;
+
+                public void Setup()
+                {
+                    WebConnection = new JsonClient(Host);
+                    Crypto = EncodingTools.Encryption.BuildCrypto(APIKey);
+                }
+
+                public void StartValidationRequest(string userID, string token, LobbyUser user, EventHandler<JsonClient.JsonMessageResponceArgs> callback)
+                {
+                    ValidateAuthenticationTokenRequest request = new ValidateAuthenticationTokenRequest();
+                    request.UserID = userID;
+                    request.Token = token;
+                    request.APIKey = string.Empty;
+
+                    WebConnection.SendMessage(request, user, callback);
+                }
 			}
             public List<AuthenticationNodeInfo> AuthenticationEndpoints = new List<AuthenticationNodeInfo>();
 
@@ -54,6 +74,8 @@ namespace LobbyNode
         }
 
 		public Config LobbyConfig = null;
+
+        protected Random RNG = new Random();
 
 		public class NodeControllerLink
 		{
@@ -72,7 +94,7 @@ namespace LobbyNode
 		public LobbyHost(string nodeConfigPath) : base()
 		{
 			DefaultPeerHandler = this;
-			LoadConfigs(nodeConfigPath);
+            LoadConfigs(nodeConfigPath);
 
 			SetupProcessingPools();
 		}
@@ -87,8 +109,11 @@ namespace LobbyNode
 
 		protected void SetupProcessingPools()
 		{
-			for(int i = 0; i < LobbyConfig.AutenticationProcessorThreads; i++)
-				AuthenticationPool.Add(new AuthenticaitonProcessor(LobbyConfig));
+            foreach (var auth in LobbyConfig.AuthenticationEndpoints)
+                auth.Setup();
+
+            for (int i = 0; i < LobbyConfig.AutenticationProcessorThreads; i++)
+				AuthenticationPool.Add(new AuthenticaitonProcessor(this));
 		}
 
 		protected AuthenticaitonProcessor GetNextAuthProcessor()
@@ -124,7 +149,10 @@ namespace LobbyNode
 						NodeControllerLinkConfig node = xml.Deserialize(sr) as NodeControllerLinkConfig;
 						sr.Close();
 						if (node != null)
-							LobbyConfig.NodeControllers.Add(node);
+                        {
+                            LobbyConfig.NodeControllers.Add(node);
+                        }
+							
 					}
 				}
 			}
@@ -167,5 +195,27 @@ namespace LobbyNode
 			if(user.MessageProcessor != null)
 				user.MessageProcessor.ReceivePeerData(MessageFactory.ParseMessage(msg), user);
 		}
-	}
+
+        public void SendValidationRequest(string userID, string token, LobbyUser user, EventHandler<JsonClient.JsonMessageResponceArgs> callback)
+        {
+      
+            Config.AuthenticationNodeInfo authNode = null;
+
+            lock (LobbyConfig.AuthenticationEndpoints)
+            {
+                if (LobbyConfig.AuthenticationEndpoints.Count == 0)
+                    return;
+
+                if (LobbyConfig.AuthenticationEndpoints.Count == 1)
+                    authNode = LobbyConfig.AuthenticationEndpoints[0];
+                else
+                    authNode = LobbyConfig.AuthenticationEndpoints[RNG.Next(LobbyConfig.AuthenticationEndpoints.Count)];
+            }
+
+            if (authNode == null)
+                return;
+
+            authNode.StartValidationRequest(userID, token, user, callback);
+        }
+    }
 }

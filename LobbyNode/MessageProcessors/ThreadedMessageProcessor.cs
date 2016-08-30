@@ -135,8 +135,9 @@ namespace LobbyNode.MessageProcessors
 					}
 					count++;
 				}
+                Tick();
 
-				Thread.Sleep(hadOne ? ThreadSleepTime : ThreadSleepTime * NoMessageSleepFactor);
+                Thread.Sleep(hadOne ? ThreadSleepTime : ThreadSleepTime * NoMessageSleepFactor);
 			}
 
 			Worker = null;
@@ -165,5 +166,10 @@ namespace LobbyNode.MessageProcessors
 		{
 
 		}
+
+        protected virtual void Tick()
+        {
+
+        }
 	}
 }
