@@ -121,6 +121,7 @@ namespace LobbyNode.Security
         {
             public LobbyUser User = null;
             public event EventHandler<BanProcessrUserArgs> Callback = null;
+			public object Token = null;
 
             public void CallCallback(BanProcessrUserArgs args)
             {
@@ -131,10 +132,11 @@ namespace LobbyNode.Security
 
         public BanList Bans = null;
 
-        public void Add(LobbyUser user, EventHandler<BanProcessrUserArgs> cb)
+        public void Add(LobbyUser user, EventHandler<BanProcessrUserArgs> cb, object token)
         {
             BanCheckUser bcu = new BanCheckUser();
             bcu.User = user;
+			bcu.Token = token;
             bcu.Callback += cb;
 
             lock (CheckingUsers)
@@ -191,6 +193,7 @@ namespace LobbyNode.Security
             {
                 BanProcessrUserArgs args = new BanProcessrUserArgs();
                 args.User = bcu.User;
+				args.Token = bcu.Token;
 
                 bool ipCheckValid = false;
 

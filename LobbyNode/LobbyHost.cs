@@ -174,12 +174,20 @@ namespace LobbyNode
 				LobbyConfig = new Config();
 		}
 
+		void ChangePeerToMessageProcessor(LobbyUser user, IUserMessageProcessor processor)
+		{
+			if(user.MessageProcessor != null)
+				user.MessageProcessor.PeerRemoved(user);
+
+			user.MessageProcessor = processor;
+			if (user.MessageProcessor != null)
+				user.MessageProcessor.PeerAdded(user);
+		}
+
 		Peer PeerHandler.AddPeer(NetIncomingMessage msg)
 		{
 			LobbyUser user = new LobbyUser();
-			user.MessageProcessor = GetNextAuthProcessor();
-			if (user.MessageProcessor != null)
-				user.MessageProcessor.PeerAdded(user);
+			ChangePeerToMessageProcessor(user, GetNextAuthProcessor());
 			return user;
 		}
 
@@ -226,5 +234,10 @@ namespace LobbyNode
 
             authNode.StartValidationRequest(userID, token, user, callback);
         }
+
+		public void PeerAuthenticated(LobbyUser user)
+		{
+			ChangePeerToMessageProcessor(user, null); // pick a pool for the lobby chat processors
+		}
     }
 }
