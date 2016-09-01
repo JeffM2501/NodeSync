@@ -43,9 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameManager.cs" />
     <Compile Include="LobbyHost.cs" />
     <Compile Include="LobbyUser.cs" />
     <Compile Include="MessageProcessors\AuthenticaitonProcessor.cs" />
+    <Compile Include="MessageProcessors\LobbyUserProcessor.cs" />
     <Compile Include="MessageProcessors\ThreadedMessageProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

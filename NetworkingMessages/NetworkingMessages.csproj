@@ -41,6 +41,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,8 +51,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Messages\Chat\UserChatMessage.cs" />
+    <Compile Include="Messages\Lobby\AddLobbyChatUsers.cs" />
     <Compile Include="Messages\Lobby\AuthenticationRequest.cs" />
     <Compile Include="MessageFactory.cs" />
+    <Compile Include="Messages\Lobby\Games\GameRedirectMessage.cs" />
+    <Compile Include="Messages\Lobby\Games\ListGamesMessage.cs" />
+    <Compile Include="Messages\Lobby\Games\ListGamesRequest.cs" />
+    <Compile Include="Messages\Lobby\Games\StartGameRequest.cs" />
+    <Compile Include="Messages\Lobby\RemoveLobbyChatUser.cs" />
     <Compile Include="Messages\NetworkMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

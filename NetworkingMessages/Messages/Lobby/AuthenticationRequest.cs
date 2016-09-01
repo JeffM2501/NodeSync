@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace NetworkingMessages.Messages.Lobby
 {
-	public class AuthenticationRequest : NetworkMessage
-	{
+	public class AuthenticationRequest : SerializedNetworkMessage
+    {
 		public string UserID = string.Empty;
 		public string Token = string.Empty;
 

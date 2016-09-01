@@ -27,6 +27,7 @@ namespace LobbyNode
         public class NodeControllerLinkConfig
         {
             public string HostIdentifyer = string.Empty;
+            public string Name = string.Empty;
             public string ControlConnectionURL = string.Empty;
 
             public string OutboundPrivateKey = string.Empty;

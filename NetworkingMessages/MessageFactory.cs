@@ -14,7 +14,13 @@ namespace NetworkingMessages
 	{
 		public static string ProtocolVersionString = "NetSync.0.0.1";
 
-		private static Dictionary<int, Type> MessageIDs = new Dictionary<int, Type>();
+        private class MessageTypeInfo
+        {
+            public Type ClassType = null;
+            public bool IsCustomPacked = false;
+        }
+
+		private static Dictionary<int, MessageTypeInfo> MessageIDs = new Dictionary<int, MessageTypeInfo>();
 
 		static MessageFactory()
 		{
@@ -35,7 +41,17 @@ namespace NetworkingMessages
 						MessageIDs.Remove(id);
 					}
 
-					MessageIDs.Add(id, t);
+                    try
+                    {
+                        MessageTypeInfo info = new MessageTypeInfo();
+                        info.ClassType = t;
+                        NetworkMessage msg = Activator.CreateInstance(t) as NetworkMessage;
+                        info.IsCustomPacked = msg.CustomPack();
+
+                        MessageIDs.Add(id, info);
+                    }
+                    catch (Exception /*ex*/) { }
+        
 				}
 			}
 		}
@@ -47,7 +63,7 @@ namespace NetworkingMessages
 
 			int id = msg.ReadInt32();
 
-			Type t = null;
+            MessageTypeInfo t = null;
 			lock(MessageIDs)
 			{
 				if(MessageIDs.ContainsKey(id))
@@ -57,17 +73,25 @@ namespace NetworkingMessages
 			if(t == null)
 				return NetworkMessage.Empty;
 
-			NetworkMessage outMsg = (NetworkMessage)Activator.CreateInstance(t);
-			msg.ReadAllFields(outMsg);
+            NetworkMessage outMsg = null;
+            outMsg = (NetworkMessage)Activator.CreateInstance(t.ClassType);
+            if (t.IsCustomPacked)
+                outMsg.Unpack(msg);
+            else
+                msg.ReadAllFields(outMsg);
 
 			return outMsg;
 		}
 
 		public static NetOutgoingMessage PackMessage(NetOutgoingMessage outMsg, NetworkMessage msg)
 		{
-			outMsg.Write(msg.GetType().GetHashCode());
-			outMsg.WriteAllFields(msg);
-			return outMsg;
+            outMsg.Write(msg.GetType().GetHashCode());
+            if (msg.CustomPack())
+                outMsg = msg.Pack(outMsg);
+            else
+                outMsg.WriteAllFields(msg);
+
+            return outMsg;
 		}
 	}
 }
