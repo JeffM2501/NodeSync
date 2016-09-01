@@ -71,6 +71,8 @@ namespace LobbyNode
             public int MaxConnections = 200;
 
 			internal List<NodeControllerLinkConfig> NodeControllers = new List<NodeControllerLinkConfig>();
+
+            public string BanListPath = string.Empty;
         }
 
 		public Config LobbyConfig = null;
@@ -87,6 +89,8 @@ namespace LobbyNode
 		}
 
 		public List<NodeControllerLink> NodeControllerLinks = new List<NodeControllerLink>();
+
+        protected Security.BanProcessor BanManager = new Security.BanProcessor();
 
 		protected List<AuthenticaitonProcessor> AuthenticationPool = new List<AuthenticaitonProcessor>();
 		protected int LastAuthenticator = 0;
@@ -108,12 +112,17 @@ namespace LobbyNode
 		}
 
 		protected void SetupProcessingPools()
-		{
+        {
+            if (LobbyConfig.BanListPath != string.Empty)
+                BanManager.Bans = Security.BanList.LoadFromXML(LobbyConfig.BanListPath);
+            else
+                BanManager.Bans = new Security.BanList();
+
             foreach (var auth in LobbyConfig.AuthenticationEndpoints)
                 auth.Setup();
 
             for (int i = 0; i < LobbyConfig.AutenticationProcessorThreads; i++)
-				AuthenticationPool.Add(new AuthenticaitonProcessor(this));
+				AuthenticationPool.Add(new AuthenticaitonProcessor(this, BanManager));
 		}
 
 		protected AuthenticaitonProcessor GetNextAuthProcessor()

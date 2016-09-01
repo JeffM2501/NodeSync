@@ -5,16 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 using NetworkingMessages.Messages;
 
+using LobbyNode.Security;
+
 namespace LobbyNode.MessageProcessors
 {
 	public class AuthenticaitonProcessor : ThreadedMessageProcessor
 	{
 		LobbyHost Host = null;
 
-		public AuthenticaitonProcessor(LobbyHost host)
+        public BanProcessor Bans = null;
+
+        public AuthenticaitonProcessor(LobbyHost host, BanProcessor bans)
 		{
             Host = host;
-			Start();
+            Bans = bans;
+
+            Start();
 		}
 
 		protected override void Startup()
