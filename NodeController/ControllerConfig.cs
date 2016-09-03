@@ -17,8 +17,10 @@ namespace NodeController
         public class HostConnection
         {
             public string Name = string.Empty;
-            public string PublicKey = string.Empty;
-            public string APIKey = string.Empty;
+            public string CryptoKey = string.Empty;
+
+            [XmlIgnore]
+            public RijndaelManaged CryptoCache = null;
         }
         public List<HostConnection> Hosts = new List<HostConnection>();
 
@@ -27,13 +29,17 @@ namespace NodeController
             return Hosts.Find(x => x.Name == hostName);
         }
 
-        public void InitCrypto(string hotName, RSACryptoServiceProvider rsa)
+        public RijndaelManaged GetCrypto(string hotName)
         {
             var host = FindHost(hotName);
             if (host == null)
-                return;
+                return new RijndaelManaged();
 
-            rsa.ImportCspBlob(Convert.FromBase64String(DecodeKeys ? host.PublicKey.Unprotect() : host.PublicKey));
+
+            if (host.CryptoCache == null)
+                host.CryptoCache = EncodingTools.Encryption.BuildCrypto(DecodeKeys ? host.CryptoKey.Unprotect() : host.CryptoKey);
+
+            return host.CryptoCache;
         }
 
         public string RootTempFolder = string.Empty;
@@ -52,7 +58,9 @@ namespace NodeController
                 cfg.ListenPrefixes.Add("http://localhost:80");
                 HostConnection c = new HostConnection();
                 c.Name = "A host";
-                c.PublicKey = "A key";
+                c.CryptoCache = new RijndaelManaged();
+                c.CryptoKey = EncodingTools.Encryption.GetTokenSalt(c.CryptoCache);
+
                 cfg.Hosts.Add(c);
 
                 cfg.RootTempFolder = Path.GetTempPath();

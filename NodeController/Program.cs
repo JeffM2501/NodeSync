@@ -85,12 +85,7 @@ namespace NodeController
         static TokenAuthenticatedResponce SignResponce(TokenAuthenticatedResponce responce, TokenAuthenticatedRequest request)
         {
             if (responce != null && request != null)
-            {
-                var cfg = GetConfig();
-                var hostInfo = cfg.FindHost(request.HostID);
-                if (hostInfo != null)
-                    responce.Token = EncodingTools.Encryption.Encrypt(request.Token, hostInfo.PublicKey, hostInfo.APIKey);
-            }
+                responce.Token = EncodingTools.Encryption.Encrypt(request.Token, GetConfig().GetCrypto(request.HostID));
             
             return responce;
         }
@@ -104,11 +99,7 @@ namespace NodeController
             var hostInfo = cfg.FindHost(request.HostID);
             if (hostInfo == null)
                 return false;
-
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-            cfg.InitCrypto(hostInfo.Name, rsa);
-
-            return EncodingTools.Tokens.ValidateCurrentTimeToken(rsa, hostInfo.APIKey, request.Token, cfg.TokenKeyValidationRange);
+            return EncodingTools.Tokens.ValidateCurrentTimeToken(cfg.GetCrypto(hostInfo.Name), request.Token, cfg.TokenKeyValidationRange);
         }
 
         private static NodeStatusResponce BuildNodeStatus()

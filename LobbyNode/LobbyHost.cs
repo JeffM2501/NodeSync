@@ -29,9 +29,7 @@ namespace LobbyNode
             public string HostIdentifyer = string.Empty;
             public string Name = string.Empty;
             public string ControlConnectionURL = string.Empty;
-
-            public string OutboundPrivateKey = string.Empty;
-            public string InboundAPIKey = string.Empty;
+            public string APIKey = string.Empty;
 
             // add other data here to describe the controller
         }
@@ -69,9 +67,10 @@ namespace LobbyNode
 
 			public int AutenticationProcessorThreads = 1;
 
-            public int MaxConnections = 200;
+            public int PreferedChatRoomSize = 25;
+            public int MaxChatRoomSize = 25;
 
-			internal List<NodeControllerLinkConfig> NodeControllers = new List<NodeControllerLinkConfig>();
+            internal List<NodeControllerLinkConfig> NodeControllers = new List<NodeControllerLinkConfig>();
 
             public string BanListPath = string.Empty;
         }
@@ -238,7 +237,7 @@ namespace LobbyNode
 
 		public void PeerAuthenticated(LobbyUser user)
 		{
-			ChangePeerToMessageProcessor(user, null); // pick a pool for the lobby chat processors
+			ChangePeerToMessageProcessor(user, LobbyUserProcessor.FindBestLobbyProcessor(LobbyConfig.PreferedChatRoomSize));
 		}
     }
 }

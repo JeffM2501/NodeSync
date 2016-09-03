@@ -12,6 +12,10 @@ namespace JsonMessages.MessageTypes.NodeStatus
         {
             public string Name = string.Empty;
             public string ID = string.Empty;
+
+            public int Port = int.MinValue;
+            public string Description = string.Empty;
+            public string Map = string.Empty;
         }
         public List<NodeInfo> ActiveNodes = new List<NodeInfo>();
 

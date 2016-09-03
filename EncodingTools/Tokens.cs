@@ -6,47 +6,35 @@ namespace EncodingTools
 {
     public static class Tokens
     {
-        private static object HashProvider = new SHA512CryptoServiceProvider();
-
-        public static string GenerateTimeToken(RSACryptoServiceProvider rsa, string apiKey)
+        public static string GenerateTimeToken(RijndaelManaged crypto)
         {
             uint min = UnixTime.GetTokenMinutes();
-            byte[] t = BitConverter.GetBytes(min);
 
-            byte[] keyBytes = Encoding.UTF8.GetBytes(apiKey);
-
-            byte[] saltedData = new byte[t.Length + keyBytes.Length];
-            Array.Copy(keyBytes,0, saltedData, t.Length, keyBytes.Length);
-            Array.Copy(t, saltedData, t.Length);
-
-            return Convert.ToBase64String(rsa.SignData(saltedData, HashProvider));
+            return Encryption.Encrypt(min.ToString(), crypto);
         }
 
-        public static bool ValidateTimeToken(RSACryptoServiceProvider rsa, string apiKey, string hash, uint time)
+        public static bool ValidateTimeToken(RijndaelManaged crypto, string value, uint now)
         {
-            byte[] t = BitConverter.GetBytes(time);
+            string timeString = Encryption.Decrypt(value, crypto);
+            uint time = uint.MinValue;
+            if (!uint.TryParse(timeString, out time))
+                return false;
 
-            byte[] keyBytes = Encoding.UTF8.GetBytes(apiKey);
-
-            byte[] saltedData = new byte[t.Length + keyBytes.Length];
-            Array.Copy(keyBytes, 0, saltedData, t.Length, keyBytes.Length);
-            Array.Copy(t, saltedData, t.Length);
-
-            return rsa.VerifyData(saltedData, HashProvider, Convert.FromBase64String(hash));
+            return time == now;
         }
 
-        public static bool ValidateCurrentTimeToken(RSACryptoServiceProvider rsa, string apiKey, string hash, int range)
+        public static bool ValidateCurrentTimeToken(RijndaelManaged crypto, string value, int range)
         {
             uint now = UnixTime.GetTokenMinutes();
-            if (ValidateTimeToken(rsa, apiKey, hash, now))
+            if (ValidateTimeToken(crypto, value, now))
                 return true;
 
             for(int i = 1; i <= range; i++)
             {
-                if (ValidateTimeToken(rsa, apiKey, hash, (uint)(now + i)))
+                if (ValidateTimeToken(crypto, value,(uint)(now + i)))
                     return true;
 
-                if (ValidateTimeToken(rsa, apiKey, hash, (uint)(now - i)))
+                if (ValidateTimeToken(crypto, value,(uint)(now - i)))
                     return true;
             }
 

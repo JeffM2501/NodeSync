@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -71,6 +71,17 @@ namespace EncodingTools
             return ret;
         }
 
+        public static string GetDataHash(string data, RijndaelManaged symmetricKey)
+        {
+            SHA256 hasher = SHA256.Create();
+            byte[] dBytes = Encoding.UTF8.GetBytes(data);
+            byte[] d = new byte[dBytes.Length + symmetricKey.IV.Length];
+            Array.Copy(dBytes, 0, d, 0, dBytes.Length);
+            Array.Copy(symmetricKey.IV, 0, d, dBytes.Length, symmetricKey.IV.Length);
+
+            return Convert.ToBase64String(hasher.ComputeHash(d));
+        }
+
         public static RijndaelManaged BuildCrypto(string tokenSalt)
         {
             RijndaelManaged crypto = new RijndaelManaged();
@@ -87,6 +98,11 @@ namespace EncodingTools
                 return crypto;
             }
             return null;
+        }
+
+        public static string GetTokenSalt(RijndaelManaged crypto)
+        {
+            return Convert.ToBase64String(crypto.Key) + ":" + Convert.ToBase64String(crypto.IV);
         }
     }
 }
